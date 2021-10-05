@@ -59,6 +59,7 @@
 #include "base/scoped_lock.h"
 #include "base/split_string.h"
 #include "doc/sprite.h"
+#include "drm.h"
 #include "fmt/format.h"
 #include "os/error.h"
 #include "os/surface.h"
@@ -174,6 +175,13 @@ public:
 
   void createDataRecovery(Context* ctx) {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_VERSION
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     m_recovery = new app::crash::DataRecovery(ctx);
     m_recovery->SessionsListIsReady.connect(
       [] {
@@ -189,6 +197,13 @@ public:
 
   void searchDataRecoverySessions() {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_VERSION
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     ASSERT(m_recovery);
     if (m_recovery)
       m_recovery->launchSearch();
@@ -197,6 +212,13 @@ public:
 
   void deleteDataRecovery() {
 #ifdef ENABLE_DATA_RECOVERY
+
+#ifdef ENABLE_TRIAL_VERSION
+    DRM_INVALID{
+      return;
+    }
+#endif
+
     if (m_recovery) {
       delete m_recovery;
       m_recovery = nullptr;
@@ -287,6 +309,11 @@ int App::initialize(const AppOptions& options)
   }
 
   initialize_color_spaces(preferences());
+
+#ifdef ENABLE_DRM
+  LOG("APP: Initializing DRM...\n");
+  app_configure_drm();
+#endif
 
   // Load modules
   m_modules = new Modules(createLogInDesktop, preferences());
@@ -808,5 +835,13 @@ int app_get_color_to_clear_layer(Layer* layer)
 
   return color_utils::color_for_layer(color, layer);
 }
+
+#ifdef ENABLE_DRM
+void app_configure_drm() {
+  ResourceFinder rf;
+  rf.includeUserDir("");
+  DRM_CONFIGURE(rf.getFirstOrCreateDefault());
+}
+#endif
 
 } // namespace app
