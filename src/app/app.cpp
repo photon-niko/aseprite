@@ -68,6 +68,7 @@
 #include "render/render.h"
 #include "ui/intern.h"
 #include "ui/ui.h"
+#include "updater/user_agent.h"
 #include "ver/info.h"
 
 #if LAF_MACOS
@@ -840,7 +841,7 @@ int app_get_color_to_clear_layer(Layer* layer)
 void app_configure_drm() {
   ResourceFinder rf;
   rf.includeUserDir("");
-  DRM_CONFIGURE(rf.getFirstOrCreateDefault());
+  DRM_CONFIGURE(rf.getFirstOrCreateDefault(), updater::getUserAgent());
 }
 #endif
 
